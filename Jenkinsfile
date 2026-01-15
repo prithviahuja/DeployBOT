@@ -9,15 +9,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                // Jenkins already cloned the repo
-                // This just ensures a clean workspace
-                cleanWs()
-                checkout scm
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t medical-rag:latest .'
