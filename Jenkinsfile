@@ -1,12 +1,12 @@
 pipeline {
     agent any
 
-    // environment {
-    //     AWS_REGION  = 'ap-south-1'
-    //     ECR_REPO   = 'medical-rag'
-    //     IMAGE_TAG  = 'latest'
-    //     SERVICE_NAME = 'llmops-medical-service'
-    // }
+    environment {
+        AWS_REGION  = 'ap-south-1'
+        ECR_REPO   = 'medical-rag'
+        IMAGE_TAG  = 'latest'
+        SERVICE_NAME = 'llmops-medical-service'
+    }
 
     pipeline {
     agent any
