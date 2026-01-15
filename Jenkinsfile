@@ -1,15 +1,17 @@
 pipeline {
     agent any
 
-    environment {
-        AWS_REGION  = 'ap-south-1'
-        ECR_REPO   = 'medical-rag'
-        IMAGE_TAG  = 'latest'
-        SERVICE_NAME = 'llmops-medical-service'
-    }
+    // environment {
+    //     AWS_REGION  = 'ap-south-1'
+    //     ECR_REPO   = 'medical-rag'
+    //     IMAGE_TAG  = 'latest'
+    //     SERVICE_NAME = 'llmops-medical-service'
+    // }
+
+    pipeline {
+    agent any
 
     stages {
-
         stage('Checkout Source Code') {
             steps {
                 cleanWs()
@@ -22,41 +24,44 @@ pipeline {
                 )
             }
         }
+    }
+}
 
-        stage('Build, Scan, and Push Docker Image to ECR') {
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-token'
-                ]]) {
-                    script {
-                        def accountId = sh(
-                            script: "aws sts get-caller-identity --query Account --output text",
-                            returnStdout: true
-                        ).trim()
 
-                        def ecrUrl = "${accountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
-                        def imageFullTag = "${ecrUrl}:${IMAGE_TAG}"
+        // stage('Build, Scan, and Push Docker Image to ECR') {
+        //     steps {
+        //         withCredentials([[
+        //             $class: 'AmazonWebServicesCredentialsBinding',
+        //             credentialsId: 'aws-token'
+        //         ]]) {
+        //             script {
+        //                 def accountId = sh(
+        //                     script: "aws sts get-caller-identity --query Account --output text",
+        //                     returnStdout: true
+        //                 ).trim()
 
-                        sh """
-                        aws ecr get-login-password --region ${AWS_REGION} \
-                          | docker login --username AWS --password-stdin ${ecrUrl}
+        //                 def ecrUrl = "${accountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
+        //                 def imageFullTag = "${ecrUrl}:${IMAGE_TAG}"
 
-                        docker build -t ${ECR_REPO}:${IMAGE_TAG} .
+        //                 sh """
+        //                 aws ecr get-login-password --region ${AWS_REGION} \
+        //                   | docker login --username AWS --password-stdin ${ecrUrl}
 
-                        trivy image --severity HIGH,CRITICAL \
-                          --format json -o trivy-report.json \
-                          ${ECR_REPO}:${IMAGE_TAG} || true
+        //                 docker build -t ${ECR_REPO}:${IMAGE_TAG} .
 
-                        docker tag ${ECR_REPO}:${IMAGE_TAG} ${imageFullTag}
-                        docker push ${imageFullTag}
-                        """
+        //                 trivy image --severity HIGH,CRITICAL \
+        //                   --format json -o trivy-report.json \
+        //                   ${ECR_REPO}:${IMAGE_TAG} || true
 
-                        archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
-                    }
-                }
-            }
-        }
+        //                 docker tag ${ECR_REPO}:${IMAGE_TAG} ${imageFullTag}
+        //                 docker push ${imageFullTag}
+        //                 """
+
+        //                 archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+        //             }
+        //         }
+        //     }
+        // }
     
 
         // ------------------ OPTIONAL DEPLOYMENT STAGE ------------------
