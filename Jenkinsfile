@@ -1,13 +1,13 @@
 pipeline {
     agent any
 
-    environment {
-        AWS_REGION = 'ap-south-1'
-        ECR_REPO   = 'medical-rag'
-        IMAGE_TAG  = 'latest'
-    }
-
     stages {
+
+        stage('Verify Workspace') {
+            steps {
+                sh 'ls -la'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -18,11 +18,11 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 sh '''
-                trivy image --severity HIGH,CRITICAL \
-                  --format json -o trivy-report.json \
-                  medical-rag:latest || true
+                trivy image medical-rag:latest \
+                  --severity HIGH,CRITICAL \
+                  --format json -o trivy-report.json || true
                 '''
-                archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'trivy-report.json'
             }
         }
     }
