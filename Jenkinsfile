@@ -28,40 +28,40 @@ pipeline {
 }
 
 
-        // stage('Build, Scan, and Push Docker Image to ECR') {
-        //     steps {
-        //         withCredentials([[
-        //             $class: 'AmazonWebServicesCredentialsBinding',
-        //             credentialsId: 'aws-token'
-        //         ]]) {
-        //             script {
-        //                 def accountId = sh(
-        //                     script: "aws sts get-caller-identity --query Account --output text",
-        //                     returnStdout: true
-        //                 ).trim()
+        stage('Build, Scan, and Push Docker Image to ECR') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-token'
+                ]]) {
+                    script {
+                        def accountId = sh(
+                            script: "aws sts get-caller-identity --query Account --output text",
+                            returnStdout: true
+                        ).trim()
 
-        //                 def ecrUrl = "${accountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
-        //                 def imageFullTag = "${ecrUrl}:${IMAGE_TAG}"
+                        def ecrUrl = "${accountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
+                        def imageFullTag = "${ecrUrl}:${IMAGE_TAG}"
 
-        //                 sh """
-        //                 aws ecr get-login-password --region ${AWS_REGION} \
-        //                   | docker login --username AWS --password-stdin ${ecrUrl}
+                        sh """
+                        aws ecr get-login-password --region ${AWS_REGION} \
+                          | docker login --username AWS --password-stdin ${ecrUrl}
 
-        //                 docker build -t ${ECR_REPO}:${IMAGE_TAG} .
+                        docker build -t ${ECR_REPO}:${IMAGE_TAG} .
 
-        //                 trivy image --severity HIGH,CRITICAL \
-        //                   --format json -o trivy-report.json \
-        //                   ${ECR_REPO}:${IMAGE_TAG} || true
+                        trivy image --severity HIGH,CRITICAL \
+                          --format json -o trivy-report.json \
+                          ${ECR_REPO}:${IMAGE_TAG} || true
 
-        //                 docker tag ${ECR_REPO}:${IMAGE_TAG} ${imageFullTag}
-        //                 docker push ${imageFullTag}
-        //                 """
+                        docker tag ${ECR_REPO}:${IMAGE_TAG} ${imageFullTag}
+                        docker push ${imageFullTag}
+                        """
 
-        //                 archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
-        //             }
-        //         }
-        //     }
-        // }
+                        archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+                    }
+                }
+            }
+        }
     
 
         // ------------------ OPTIONAL DEPLOYMENT STAGE ------------------
