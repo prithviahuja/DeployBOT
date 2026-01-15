@@ -13,8 +13,7 @@ pipeline {
             steps {
                 script {
                     echo 'Cloning GitHub repo to Jenkins...'
-                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'Medical_rag', url: 'https://github.com/prithviahuja/DeployBOT.git']])                }
-            }
+                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'Medical_rag', url: 'https://github.com/prithviahuja/DeployBOT.git']])            }
         }
 
         // stage('Build, Scan, and Push Docker Image to ECR') {
