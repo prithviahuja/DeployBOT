@@ -1,23 +1,27 @@
-# Use official Jenkins LTS image
-FROM jenkins/jenkins:lts
+# Use the Jenkins image as the base image
+FROM jenkins/jenkins:slim
 
-# Switch to root to install packages
+# Switch to root user to install dependencies
 USER root
 
-# Install Docker CLI from Debian repos (safe for trixie)
-RUN apt-get update && \
-    apt-get install -y \
-        ca-certificates \
-        curl \
-        gnupg \
-        docker.io && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install prerequisites and Docker
+RUN apt-get update -y && \
+    apt-get install -y ca-certificates curl gnupg && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian trixie stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update -y && \
+    apt-get install -y docker-ce docker-ce-cli containerd.io && \
+    apt-get clean
 
-# Add jenkins user to docker group
+# Add Jenkins user to the Docker group (create if it doesn't exist)
 RUN groupadd -f docker && \
     usermod -aG docker jenkins
 
-# Switch back to Jenkins user
+# Create the Docker directory and volume for DinD
+RUN mkdir -p /var/lib/docker
+VOLUME /var/lib/docker
+
+# Switch back to the Jenkins user
 USER jenkins
- 
